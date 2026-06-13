@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIT GPT — AI Fitness & Nutrition Coach</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#030f09; --card:#0a1a12; --input:#061009; --green:#00C896;
+      --green-dim:rgba(0,200,150,0.13); --green-fnt:rgba(0,200,150,0.07);
+      --text:#e8f5f0; --muted:#5a8a72; --dark:#3a5a48;
+    }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes pulse  { 0%,100%{opacity:1} 50%{opacity:.35} }
+    @keyframes glow   { 0%,100%{filter:drop-shadow(0 0 8px #00C89655)} 50%{filter:drop-shadow(0 0 18px #00C89699)} }
+    html,body { min-height:100%; background:linear-gradient(180deg,var(--bg) 0%,#071a10 100%); font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif; color:var(--text); }
+    ::-webkit-scrollbar{width:4px} ::-webkit-scrollbar-thumb{background:rgba(0,200,150,.27);border-radius:4px}
+    #app{display:flex;justify-content:center;padding-bottom:80px}
+    .wrapper{width:100%;max-width:480px}
+    .header{padding:44px 24px 18px;text-align:center}
+    .logo-row{display:inline-flex;align-items:center;gap:10px;margin-bottom:6px}
+    .logo-icon{font-size:38px;animation:glow 3s ease-in-out infinite}
+    .logo-text{font-size:40px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#00C896 0%,#00ff9d 60%,#00C896 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .tagline{color:var(--muted);font-size:11.5px;letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
+    .tab-bar{display:flex;gap:4px;margin:0 14px 18px;background:#0d1f1a;border-radius:18px;padding:5px;border:1px solid var(--green-fnt)}
+    .tab-btn{flex:1;padding:9px 3px;background:transparent;border:none;border-radius:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .2s}
+    .tab-btn.active{background:var(--green);box-shadow:0 2px 12px rgba(0,200,150,.27)}
+    .tab-icon{font-size:20px}
+    .tab-label{font-size:8.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.3}
+    .tab-btn.active .tab-label{color:#fff}
+    .feature-card{margin:0 14px;background:var(--card);border:1px solid var(--green-dim);border-radius:22px;padding:20px 16px;animation:fadeIn .3s ease}
+    .card-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--green-fnt)}
+    .card-header-icon{font-size:24px;background:var(--green-fnt);border-radius:10px;padding:7px 11px}
+    .card-title{color:var(--text);font-size:16px;font-weight:700;letter-spacing:-.3px}
+    .panel{display:none} .panel.active{display:block}
+    .pill-toggle{display:flex;gap:4px;background:var(--input);border-radius:12px;padding:4px;margin-bottom:14px}
+    .pill-btn{flex:1;padding:10px 6px;border:none;border-radius:9px;cursor:pointer;background:transparent;color:var(--muted);font-weight:700;font-size:13px;transition:all .2s;font-family:inherit}
+    .pill-btn.active{background:var(--green);color:#fff}
+    input[type="text"],textarea{width:100%;background:var(--input);border:1px solid var(--green-dim);border-radius:12px;color:var(--text);font-size:14px;padding:12px 14px;font-family:inherit;line-height:1.6;transition:border-color .2s,box-shadow .2s}
+    input[type="text"]:focus,textarea:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 3px rgba(0,200,150,.1)}
+    textarea{resize:none}
+    .action-btn{width:100%;margin-top:12px;padding:14px;background:linear-gradient(135deg,var(--green) 0%,#00a87a 100%);border:none;border-radius:12px;color:#fff;font-weight:700;font-size:15px;cursor:pointer;transition:all .2s;letter-spacing:.3px;font-family:inherit}
+    .action-btn:disabled{background:#111f17;color:var(--dark);cursor:not-allowed}
+    .action-btn .pulse{animation:pulse 1s infinite;display:inline-block}
+    .photo-btns{display:flex;gap:10px}
+    .upload-btn{flex:1;padding:24px 10px;background:var(--input);border:2px dashed rgba(0,200,150,.33);border-radius:14px;cursor:pointer;color:var(--green);font-weight:600;font-size:12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s;font-family:inherit;line-height:1.5;text-align:center}
+    .upload-btn:hover{border-color:var(--green);background:rgba(0,200,150,.06)}
+    .upload-btn-icon{font-size:36px}
+    .preview-wrap{position:relative}
+    .preview-img{width:100%;border-radius:14px;max-height:220px;object-fit:cover;display:block;border:1px solid var(--green-dim)}
+    .preview-clear{position:absolute;top:8px;right:8px;background:rgba(255,68,68,.53);backdrop-filter:blur(6px);border:none;border-radius:20px;color:#fff;font-weight:700;font-size:12px;padding:5px 13px;cursor:pointer;font-family:inherit}
+    .preview-badge{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(6px);border-radius:8px;padding:3px 10px;color:var(--green);font-size:11px;font-weight:600}
+    .diet-label{color:var(--muted);font-size:11px;margin:14px 0 8px;font-weight:700;letter-spacing:.8px;text-transform:uppercase}
+    .diet-options{display:flex;gap:10px}
+    .diet-btn{flex:1;padding:14px 8px;border:2px solid var(--green-dim);border-radius:14px;cursor:pointer;background:var(--input);color:var(--muted);font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:5px;transition:all .2s;position:relative;font-family:inherit}
+    .diet-btn.veg-active{border-color:#22c55e;background:rgba(34,197,94,.09);color:#22c55e}
+    .diet-btn.nonveg-active{border-color:#f97316;background:rgba(249,115,22,.09);color:#f97316}
+    .diet-selected-badge{position:absolute;top:6px;right:8px;font-size:10px;border-radius:6px;padding:1px 5px;font-weight:800}
+    .diet-btn.veg-active .diet-selected-badge{color:#22c55e;background:rgba(34,197,94,.13)}
+    .diet-btn.nonveg-active .diet-selected-badge{color:#f97316;background:rgba(249,115,22,.13)}
+    .diet-emoji{font-size:30px}
+    .diet-sub{font-size:10px;font-weight:400;opacity:.75;text-align:center;line-height:1.4}
+    .result-card{background:linear-gradient(135deg,#0d1f1a,#0a2a20);border:1px solid var(--green-dim);border-radius:16px;padding:16px 14px;margin-top:14px;animation:fadeIn .4s ease}
+    .result-card p{margin:0;line-height:1.65;font-size:13.5px;color:var(--text)}
+    .result-card p.r-heading{margin-top:10px;margin-bottom:3px;color:var(--green);font-weight:700;font-size:14px}
+    .result-card p.r-sub{padding-left:8px;color:#c8ead8}
+    .footer-strip{display:flex;justify-content:space-around;margin:18px 14px 0;padding:14px 10px;background:var(--card);border-radius:16px;border:1px solid var(--green-fnt)}
+    .footer-item{text-align:center}
+    .footer-val{color:var(--green);font-weight:800;font-size:12px}
+    .footer-lbl{color:var(--dark);font-size:9.5px;margin-top:2px}
+    .secure-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.25);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--green);font-weight:600;margin-top:6px}
+  </style>
+</head>
+<body>
+<div id="app"><div class="wrapper">
+  <div class="header">
+    <div class="logo-row">
+      <span class="logo-icon">🏋️</span>
+      <span class="logo-text">FIT GPT</span>
+    </div>
+    <p class="tagline">AI-Powered Fitness &amp; Nutrition Coach</p>
+    <span class="secure-badge">🔒 API Key Secured (Backend Protected)</span>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab-btn active" data-tab="calorie" onclick="switchTab('calorie')"><span class="tab-icon">🍔</span><span class="tab-label">Calorie<br>Detector</span></button>
+    <button class="tab-btn" data-tab="exercise" onclick="switchTab('exercise')"><span class="tab-icon">💪</span><span class="tab-label">Exercise<br>Target</span></button>
+    <button class="tab-btn" data-tab="disease" onclick="switchTab('disease')"><span class="tab-icon">🏥</span><span class="tab-label">Disease<br>Workout</span></button>
+    <button class="tab-btn" data-tab="planner" onclick="switchTab('planner')"><span class="tab-icon">📋</span><span class="tab-label">Diet<br>Planner</span></button>
+  </div>
+
+  <div class="feature-card">
+    <div class="card-header">
+      <span class="card-header-icon" id="cardIcon">🍔</span>
+      <span class="card-title" id="cardTitle">Calorie &amp; Junk Detector</span>
+    </div>
+
+    <!-- PANEL 1: Calorie -->
+    <div class="panel active" id="panel-calorie">
+      <div class="pill-toggle">
+        <button class="pill-btn active" id="cal-pill-text" onclick="calSwitchMode('text')">✏️ Food Name Type Karein</button>
+        <button class="pill-btn" id="cal-pill-photo" onclick="calSwitchMode('photo')">📷 Photo Se Detect Karein</button>
+      </div>
+      <div id="cal-text-mode">
+        <input type="text" id="calFoodInput" placeholder="Food ka naam likhein... e.g. Biryani, Pizza, Apple, Samosa" />
+      </div>
+      <div id="cal-photo-mode" style="display:none">
+        <input type="file" id="camInput" accept="image/*" capture="environment" style="display:none" onchange="calLoadFile(this)" />
+        <input type="file" id="fileInput" accept="image/*" style="display:none" onchange="calLoadFile(this)" />
+        <div id="cal-upload-btns" class="photo-btns">
+          <button class="upload-btn" onclick="document.getElementById('camInput').click()"><span class="upload-btn-icon">📷</span>Camera se<br>Photo Lo</button>
+          <button class="upload-btn" onclick="document.getElementById('fileInput').click()"><span class="upload-btn-icon">🖼️</span>Gallery se<br>Upload Karein</button>
+        </div>
+        <div id="cal-preview-wrap" class="preview-wrap" style="display:none">
+          <img id="cal-preview-img" class="preview-img" src="" alt="food" />
+          <button class="preview-clear" onclick="calClearImage()">✕ Hatao</button>
+          <span class="preview-badge">📸 Photo Ready</span>
+        </div>
+      </div>
+      <button class="action-btn" id="calBtn" onclick="calAnalyse()">⚡ Analyse Karein</button>
+      <div id="calResult"></div>
+    </div>
+
+    <!-- PANEL 2: Exercise -->
+    <div class="panel" id="panel-exercise">
+      <input type="text" id="exInput" placeholder="Exercise ka naam (e.g. Push-ups, Squats, Plank, Deadlift...)" />
+      <button class="action-btn" id="exBtn" onclick="exAnalyse()">⚡ Target Muscles Dhundho</button>
+      <div id="exResult"></div>
+    </div>
+
+    <!-- PANEL 3: Disease -->
+    <div class="panel" id="panel-disease">
+      <input type="text" id="disInput" placeholder="Bimari batayein (e.g. Back Pain, Diabetes, High BP, Arthritis...)" />
+      <button class="action-btn" id="disBtn" onclick="disAnalyse()">⚡ Safe Exercises Batao</button>
+      <div id="disResult"></div>
+    </div>
+
+    <!-- PANEL 4: Planner -->
+    <div class="panel" id="panel-planner">
+      <textarea id="planInput" rows="3" placeholder="Apni details likhein... e.g. Age 25, Weight 80kg, Height 5'8, Goal: Weight Loss"></textarea>
+      <p class="diet-label">🥗 Diet Preference Chunein</p>
+      <div class="diet-options">
+        <button class="diet-btn veg-active" id="dietVeg" onclick="selectDiet('veg')">
+          <span class="diet-selected-badge" id="vegBadge">✓ Selected</span>
+          <span class="diet-emoji">🥦</span><span>Vegetarian</span>
+          <span class="diet-sub">Dal • Paneer • Sabzi • Fruits</span>
+        </button>
+        <button class="diet-btn" id="dietNonveg" onclick="selectDiet('nonveg')">
+          <span class="diet-selected-badge" id="nonvegBadge" style="display:none">✓ Selected</span>
+          <span class="diet-emoji">🍗</span><span>Non-Vegetarian</span>
+          <span class="diet-sub">Chicken • Fish • Eggs • Mutton</span>
+        </button>
+      </div>
+      <button class="action-btn" id="planBtn" onclick="planGenerate()">⚡ 🥦 Mera Plan Banao</button>
+      <div id="planResult"></div>
+    </div>
+  </div>
+
+  <div class="footer-strip">
+    <div class="footer-item"><div class="footer-val">4</div><div class="footer-lbl">Features</div></div>
+    <div class="footer-item"><div class="footer-val">Gemini AI</div><div class="footer-lbl">Powered by</div></div>
+    <div class="footer-item"><div class="footer-val">🔒 Secure</div><div class="footer-lbl">Backend Safe</div></div>
+    <div class="footer-item"><div class="footer-val">📷 Vision</div><div class="footer-lbl">Photo Detect</div></div>
+  </div>
+</div></div>
+
+<script>
+// ✅ API key nahi hai yahan — server se request jaati hai
+const API_TEXT   = '/api/gemini';
+const API_VISION = '/api/gemini-vision';
+
+const TAB_META = {
+  calorie:  {icon:'🍔', title:'Calorie &amp; Junk Detector'},
+  exercise: {icon:'💪', title:'Exercise → Body Part'},
+  disease:  {icon:'🏥', title:'Disease-Specific Workout'},
+  planner:  {icon:'📋', title:'AI Diet &amp; Exercise Planner'},
+};
+
+let calMode='text', calImgB64=null, calImgMT=null, dietPref='veg';
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab===id));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id==='panel-'+id));
+  document.getElementById('cardIcon').innerHTML  = TAB_META[id].icon;
+  document.getElementById('cardTitle').innerHTML = TAB_META[id].title;
+}
+
+function calSwitchMode(mode) {
+  calMode = mode;
+  document.getElementById('cal-pill-text').classList.toggle('active', mode==='text');
+  document.getElementById('cal-pill-photo').classList.toggle('active', mode==='photo');
+  document.getElementById('cal-text-mode').style.display  = mode==='text'  ? '' : 'none';
+  document.getElementById('cal-photo-mode').style.display = mode==='photo' ? '' : 'none';
+  document.getElementById('calResult').innerHTML = '';
+  calClearImage();
+  document.getElementById('calFoodInput').value = '';
+}
+
+function calLoadFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    calImgB64 = e.target.result.split(',')[1];
+    calImgMT  = file.type;
+    document.getElementById('cal-preview-img').src = e.target.result;
+    document.getElementById('cal-upload-btns').style.display  = 'none';
+    document.getElementById('cal-preview-wrap').style.display = '';
+    document.getElementById('calResult').innerHTML = '';
+  };
+  reader.readAsDataURL(file);
+}
+
+function calClearImage() {
+  calImgB64=null; calImgMT=null;
+  document.getElementById('cal-preview-wrap').style.display = 'none';
+  document.getElementById('cal-upload-btns').style.display  = '';
+  ['camInput','fileInput'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('calResult').innerHTML='';
+}
+
+function selectDiet(pref) {
+  dietPref=pref;
+  document.getElementById('dietVeg').className    = 'diet-btn'+(pref==='veg'    ? ' veg-active'    : '');
+  document.getElementById('dietNonveg').className = 'diet-btn'+(pref==='nonveg' ? ' nonveg-active' : '');
+  document.getElementById('vegBadge').style.display    = pref==='veg'    ? '' : 'none';
+  document.getElementById('nonvegBadge').style.display = pref==='nonveg' ? '' : 'none';
+  document.getElementById('planBtn').textContent = pref==='veg' ? '⚡ 🥦 Mera Plan Banao' : '⚡ 🍗 Mera Plan Banao';
+}
+
+function renderResult(id, text) {
+  const lines = text.split('\n').filter(l=>l.trim());
+  let html = '<div class="result-card">';
+  lines.forEach(line => {
+    const isH   = /^#+\s/.test(line)||/^\d+\./.test(line);
+    const isSub = line.startsWith('- ')||line.startsWith('• ');
+    const clean = line.replace(/^#+\s*/,'').replace(/\*\*(.*?)\*\*/g,'$1').replace(/^-\s+/,'• ');
+    html += '<p class="'+(isH?'r-heading':isSub?'r-sub':'')+'">'
+          + clean.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</p>';
+  });
+  html += '</div>';
+  document.getElementById(id).innerHTML = html;
+}
+
+function setLoading(btnId, yes, loadText, defaultText) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = yes;
+  btn.innerHTML = yes ? '<span class="pulse">'+loadText+'</span>' : defaultText;
+}
+
+async function callServer(url, body) {
+  const res = await fetch(url, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.result;
+}
+
+async function calAnalyse() {
+  const tpl = `You are a nutrition expert. Analyse the food and respond in this exact format:
+🍽️ Food: <name>
+🔥 Calories: <amount> per <serving>
+🏷️ Label: HEALTHY ✅ OR JUNK FOOD 🚫 (1-line reason)
+💊 Key Nutrients:
+• <Nutrient 1>: <value>
+• <Nutrient 2>: <value>
+• <Nutrient 3>: <value>
+💡 Health Tip: <one tip>`;
+  setLoading('calBtn',true,'⚡ Analyse Ho Raha Hai...','⚡ Analyse Karein');
+  document.getElementById('calResult').innerHTML='';
+  try {
+    let result;
+    if (calMode==='text') {
+      const val=document.getElementById('calFoodInput').value.trim();
+      if(!val){setLoading('calBtn',false,'','⚡ Analyse Karein');return;}
+      result = await callServer(API_TEXT, {prompt: tpl+'\n\nFood to analyse: '+val});
+    } else {
+      if(!calImgB64){setLoading('calBtn',false,'','⚡ Analyse Karein');return;}
+      result = await callServer(API_VISION, {prompt: tpl+'\n\nIdentify food in this image and analyse it.', base64:calImgB64, mimeType:calImgMT});
+    }
+    renderResult('calResult',result);
+  } catch(e){ renderResult('calResult','⚠️ Error: '+e.message); }
+  setLoading('calBtn',false,'','⚡ Analyse Karein');
+}
+
+async function exAnalyse() {
+  const val=document.getElementById('exInput').value.trim();
+  if(!val) return;
+  setLoading('exBtn',true,'⚡ Dhundh Raha Hai...','⚡ Target Muscles Dhundho');
+  document.getElementById('exResult').innerHTML='';
+  try {
+    const result = await callServer(API_TEXT, {prompt:`You are a fitness expert. For exercise: "${val}", respond with:
+🎯 Primary Muscles: (body part + muscle name)
+🔄 Secondary Muscles: (2-3 muscles)
+📊 Difficulty: Beginner / Intermediate / Advanced
+🔥 Calories Burned: ~X kcal per 10 mins
+✅ Form Tip: one key tip to avoid injury`});
+    renderResult('exResult',result);
+  } catch(e){ renderResult('exResult','⚠️ Error: '+e.message); }
+  setLoading('exBtn',false,'','⚡ Target Muscles Dhundho');
+}
+
+async function disAnalyse() {
+  const val=document.getElementById('disInput').value.trim();
+  if(!val) return;
+  setLoading('disBtn',true,'⚡ Dhundh Raha Hai...','⚡ Safe Exercises Batao');
+  document.getElementById('disResult').innerHTML='';
+  try {
+    const result = await callServer(API_TEXT, {prompt:`You are a medical fitness advisor. For condition: "${val}", provide:
+✅ Safe Exercises (5 with 1-line description each)
+🚫 Avoid These Exercises (3-4)
+⚠️ Important Precautions (2-3 lines)
+👨‍⚕️ Note: "Apne doctor se salah zaroor lein exercise shuru karne se pehle."`});
+    renderResult('disResult',result);
+  } catch(e){ renderResult('disResult','⚠️ Error: '+e.message); }
+  setLoading('disBtn',false,'','⚡ Safe Exercises Batao');
+}
+
+async function planGenerate() {
+  const val=document.getElementById('planInput').value.trim();
+  if(!val) return;
+  const dietLabel = dietPref==='veg'
+    ? 'Strictly Vegetarian (NO meat/chicken/fish/eggs — plant-based only, dairy ok)'
+    : 'Non-Vegetarian (include chicken, fish, eggs, mutton — protein-rich)';
+  const def = dietPref==='veg' ? '⚡ 🥦 Mera Plan Banao' : '⚡ 🍗 Mera Plan Banao';
+  setLoading('planBtn',true,'⚡ Plan Ban Raha Hai...',def);
+  document.getElementById('planResult').innerHTML='';
+  try {
+    const result = await callServer(API_TEXT, {prompt:`You are a personal fitness and nutrition coach.
+STRICT RULE: Diet type is ${dietLabel}. Never suggest foods outside this diet.
+User details: ${val}
+Create a daily plan with:
+🌅 Morning Routine (wake time + exercise)
+🍽️ Meal Plan (Breakfast, Snack, Lunch, Evening Snack, Dinner with calories)
+📊 Total Daily Calories: ~XXXX kcal
+🏃 Evening Workout (exercise + duration)
+💧 Water Intake: X litres/day
+💪 Motivational Tip (1 inspiring line)
+Use Indian food names. Be specific and practical.`});
+    renderResult('planResult',result);
+  } catch(e){ renderResult('planResult','⚠️ Error: '+e.message); }
+  setLoading('planBtn',false,'',def);
+}
+
+document.getElementById('calFoodInput').addEventListener('keydown', e=>{if(e.key==='Enter')calAnalyse();});
+document.getElementById('exInput').addEventListener('keydown',      e=>{if(e.key==='Enter')exAnalyse();});
+document.getElementById('disInput').addEventListener('keydown',     e=>{if(e.key==='Enter')disAnalyse();});
+</script>
+</body>
+</html>
