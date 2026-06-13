@@ -6,7 +6,7 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-const GEMINI_API_KEY = 'AIzaSyAQ.Ab8RN6JnbZeVtAmXCL60LQyXaMSEt0GaJzBKlT5hSExEv5jtWw';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
