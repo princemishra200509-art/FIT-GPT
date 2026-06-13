@@ -7,7 +7,7 @@ const app = express();
 const PORT = 3000;
 
 // ⚠️ SIRF YAHAN APNI API KEY DAALO — HTML mein nahi dikhegi
-const GEMINI_API_KEY = 'APNI_KEY_YAHAN_DAALO';
+const GEMINI_API_KEY = AQ.Ab8RN6LPCyd7AuJZs5w-AiJVNE8V2XN5fkTQkekqtKaVRC38Sw;
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
