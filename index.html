@@ -170,8 +170,10 @@
 const API_TEXT   = '/api/gemini';
 const API_VISION = '/api/gemini-vision';
 
-// Yeh instruction har prompt ke shuru mein lagega — language auto-detect karega
-const LANG_INSTRUCTION = "IMPORTANT: Detect the language of the user's input below. If the user's input is in Hindi or Hinglish (Roman script Hindi), respond in Hindi using Hinglish (mix of Hindi and English words, written in Roman/English script, as commonly used in India - do NOT use Devanagari script). If the user's input is in English, respond in clear English. Match the user's language.\n\n";
+// Yeh function language detect karke instruction banata hai — actual input ke saath
+function langInstruction(inputText) {
+  return `Note: the input word/phrase is "${inputText}". If this looks like a Hindi or Hinglish word/phrase (Hindi words written in English letters, e.g. "seb", "kaise banayein", "chaval"), respond ENTIRELY in Hinglish (Hindi words written in Roman/English letters, mixed naturally with English technical terms, as commonly spoken in India). If it is a normal English word/phrase, respond ENTIRELY in clear English. Do not mention or explain this note — just give the direct answer in the chosen language.\n\n`;
+}
 
 const TAB_META = {
   calorie:  {icon:'🍔', title:'Calorie &amp; Junk Detector'},
@@ -263,7 +265,7 @@ async function callServer(url, body) {
 }
 
 async function calAnalyse() {
-  const tpl = LANG_INSTRUCTION + `You are a nutrition expert. Analyse the food and respond in this exact format:
+  const baseTpl = `You are a nutrition expert. Analyse the food and respond in this exact format:
 🍽️ Food: <name>
 🔥 Calories: <amount> per <serving>
 🏷️ Label: HEALTHY ✅ OR JUNK FOOD 🚫 (1-line reason)
@@ -279,9 +281,11 @@ async function calAnalyse() {
     if (calMode==='text') {
       const val=document.getElementById('calFoodInput').value.trim();
       if(!val){setLoading('calBtn',false,'','⚡ Analyse Karein');return;}
+      const tpl = langInstruction(val) + baseTpl;
       result = await callServer(API_TEXT, {prompt: tpl+'\n\nFood to analyse: '+val});
     } else {
       if(!calImgB64){setLoading('calBtn',false,'','⚡ Analyse Karein');return;}
+      const tpl = langInstruction('apple') + baseTpl;
       result = await callServer(API_VISION, {prompt: tpl+'\n\nIdentify food in this image and analyse it.', base64:calImgB64, mimeType:calImgMT});
     }
     renderResult('calResult',result);
@@ -295,7 +299,7 @@ async function exAnalyse() {
   setLoading('exBtn',true,'⚡ Dhundh Raha Hai...','⚡ Target Muscles Dhundho');
   document.getElementById('exResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a fitness expert. For exercise: "${val}", respond with:
+    const result = await callServer(API_TEXT, {prompt: langInstruction(val) + `You are a fitness expert. For exercise: "${val}", respond with:
 🎯 Primary Muscles: (body part + muscle name)
 🔄 Secondary Muscles: (2-3 muscles)
 📊 Difficulty: Beginner / Intermediate / Advanced
@@ -312,7 +316,7 @@ async function disAnalyse() {
   setLoading('disBtn',true,'⚡ Dhundh Raha Hai...','⚡ Safe Exercises Batao');
   document.getElementById('disResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a medical fitness advisor. For condition: "${val}", provide:
+    const result = await callServer(API_TEXT, {prompt: langInstruction(val) + `You are a medical fitness advisor. For condition: "${val}", provide:
 ✅ Safe Exercises (5 with 1-line description each)
 🚫 Avoid These Exercises (3-4)
 ⚠️ Important Precautions (2-3 lines)
@@ -332,7 +336,7 @@ async function planGenerate() {
   setLoading('planBtn',true,'⚡ Plan Ban Raha Hai...',def);
   document.getElementById('planResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a personal fitness and nutrition coach.
+    const result = await callServer(API_TEXT, {prompt: langInstruction(val) + `You are a personal fitness and nutrition coach.
 STRICT RULE: Diet type is ${dietLabel}. Never suggest foods outside this diet.
 User details: ${val}
 Create a daily plan with:
