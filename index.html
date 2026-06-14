@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FIT GPT — AI Fitness & Nutrition Coach</title>
+  <link rel="manifest" href="/manifest.json">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -62,7 +63,7 @@
     .diet-emoji{font-size:30px}
     .diet-sub{font-size:10px;font-weight:400;opacity:.75;text-align:center;line-height:1.4}
     .result-card{background:linear-gradient(135deg,#0d1f1a,#0a2a20);border:1px solid var(--green-dim);border-radius:16px;padding:16px 14px;margin-top:14px;animation:fadeIn .4s ease}
-    .result-card p{margin:0;line-height:1.65;font-size:13.5px;color:var(--text)}
+    .result-card p{margin:0;line-height:1.65;font-size:13.5px;color:var(--text);white-space:pre-wrap}
     .result-card p.r-heading{margin-top:10px;margin-bottom:3px;color:var(--green);font-weight:700;font-size:14px}
     .result-card p.r-sub{padding-left:8px;color:#c8ead8}
     .footer-strip{display:flex;justify-content:space-around;margin:18px 14px 0;padding:14px 10px;background:var(--card);border-radius:16px;border:1px solid var(--green-fnt)}
@@ -159,16 +160,18 @@
 
   <div class="footer-strip">
     <div class="footer-item"><div class="footer-val">4</div><div class="footer-lbl">Features</div></div>
-    <div class="footer-item"><div class="footer-val">Gemini AI</div><div class="footer-lbl">Powered by</div></div>
+    <div class="footer-item"><div class="footer-val">Groq AI</div><div class="footer-lbl">Powered by</div></div>
     <div class="footer-item"><div class="footer-val">🔒 Secure</div><div class="footer-lbl">Backend Safe</div></div>
     <div class="footer-item"><div class="footer-val">📷 Vision</div><div class="footer-lbl">Photo Detect</div></div>
   </div>
 </div></div>
 
 <script>
-// ✅ API key nahi hai yahan — server se request jaati hai
 const API_TEXT   = '/api/gemini';
 const API_VISION = '/api/gemini-vision';
+
+// Yeh instruction har prompt ke shuru mein lagega — language auto-detect karega
+const LANG_INSTRUCTION = "IMPORTANT: Detect the language of the user's input below. If the user's input is in Hindi or Hinglish (Roman script Hindi), respond in Hindi using Hinglish (mix of Hindi and English words, written in Roman/English script, as commonly used in India - do NOT use Devanagari script). If the user's input is in English, respond in clear English. Match the user's language.\n\n";
 
 const TAB_META = {
   calorie:  {icon:'🍔', title:'Calorie &amp; Junk Detector'},
@@ -260,7 +263,7 @@ async function callServer(url, body) {
 }
 
 async function calAnalyse() {
-  const tpl = `You are a nutrition expert. Analyse the food and respond in this exact format:
+  const tpl = LANG_INSTRUCTION + `You are a nutrition expert. Analyse the food and respond in this exact format:
 🍽️ Food: <name>
 🔥 Calories: <amount> per <serving>
 🏷️ Label: HEALTHY ✅ OR JUNK FOOD 🚫 (1-line reason)
@@ -292,7 +295,7 @@ async function exAnalyse() {
   setLoading('exBtn',true,'⚡ Dhundh Raha Hai...','⚡ Target Muscles Dhundho');
   document.getElementById('exResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt:`You are a fitness expert. For exercise: "${val}", respond with:
+    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a fitness expert. For exercise: "${val}", respond with:
 🎯 Primary Muscles: (body part + muscle name)
 🔄 Secondary Muscles: (2-3 muscles)
 📊 Difficulty: Beginner / Intermediate / Advanced
@@ -309,7 +312,7 @@ async function disAnalyse() {
   setLoading('disBtn',true,'⚡ Dhundh Raha Hai...','⚡ Safe Exercises Batao');
   document.getElementById('disResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt:`You are a medical fitness advisor. For condition: "${val}", provide:
+    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a medical fitness advisor. For condition: "${val}", provide:
 ✅ Safe Exercises (5 with 1-line description each)
 🚫 Avoid These Exercises (3-4)
 ⚠️ Important Precautions (2-3 lines)
@@ -329,7 +332,7 @@ async function planGenerate() {
   setLoading('planBtn',true,'⚡ Plan Ban Raha Hai...',def);
   document.getElementById('planResult').innerHTML='';
   try {
-    const result = await callServer(API_TEXT, {prompt:`You are a personal fitness and nutrition coach.
+    const result = await callServer(API_TEXT, {prompt: LANG_INSTRUCTION + `You are a personal fitness and nutrition coach.
 STRICT RULE: Diet type is ${dietLabel}. Never suggest foods outside this diet.
 User details: ${val}
 Create a daily plan with:
