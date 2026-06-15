@@ -24,11 +24,11 @@
     .logo-icon{font-size:38px;animation:glow 3s ease-in-out infinite}
     .logo-text{font-size:40px;font-weight:900;letter-spacing:-2px;background:linear-gradient(135deg,#00C896 0%,#00ff9d 60%,#00C896 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
     .tagline{color:var(--muted);font-size:11.5px;letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
-    .tab-bar{display:flex;gap:4px;margin:0 14px 18px;background:#0d1f1a;border-radius:18px;padding:5px;border:1px solid var(--green-fnt)}
-    .tab-btn{flex:1;padding:9px 3px;background:transparent;border:none;border-radius:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .2s}
+    .tab-bar{display:flex;gap:3px;margin:0 14px 18px;background:#0d1f1a;border-radius:18px;padding:5px;border:1px solid var(--green-fnt)}
+    .tab-btn{flex:1;padding:8px 2px;background:transparent;border:none;border-radius:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;transition:all .2s}
     .tab-btn.active{background:var(--green);box-shadow:0 2px 12px rgba(0,200,150,.27)}
-    .tab-icon{font-size:20px}
-    .tab-label{font-size:8.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.3}
+    .tab-icon{font-size:18px}
+    .tab-label{font-size:7.5px;font-weight:700;color:var(--muted);text-align:center;line-height:1.25}
     .tab-btn.active .tab-label{color:#fff}
     .feature-card{margin:0 14px;background:var(--card);border:1px solid var(--green-dim);border-radius:22px;padding:20px 16px;animation:fadeIn .3s ease}
     .card-header{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid var(--green-fnt)}
@@ -71,6 +71,22 @@
     .footer-val{color:var(--green);font-weight:800;font-size:12px}
     .footer-lbl{color:var(--dark);font-size:9.5px;margin-top:2px}
     .secure-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(0,200,150,.1);border:1px solid rgba(0,200,150,.25);border-radius:20px;padding:4px 12px;font-size:11px;color:var(--green);font-weight:600;margin-top:6px}
+
+    /* Nutrition Calculator */
+    .calc-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+    .calc-field label{display:block;color:var(--muted);font-size:10.5px;font-weight:700;margin-bottom:5px;letter-spacing:.5px;text-transform:uppercase}
+    .calc-field input,.calc-field select{width:100%;background:var(--input);border:1px solid var(--green-dim);border-radius:10px;color:var(--text);font-size:14px;padding:10px 12px;font-family:inherit}
+    .calc-field input:focus,.calc-field select:focus{outline:none;border-color:var(--green)}
+    .activity-options{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+    .activity-btn{padding:11px 14px;border:2px solid var(--green-dim);border-radius:12px;cursor:pointer;background:var(--input);color:var(--muted);font-weight:600;font-size:12.5px;text-align:left;transition:all .2s;font-family:inherit}
+    .activity-btn.active{border-color:var(--green);background:rgba(0,200,150,.1);color:var(--green)}
+    .macro-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+    .macro-box{background:var(--input);border-radius:10px;padding:12px 8px;text-align:center;border:1px solid var(--green-fnt)}
+    .macro-val{font-size:18px;font-weight:800;color:var(--green)}
+    .macro-label{font-size:10px;color:var(--muted);margin-top:2px}
+    .calorie-hero{text-align:center;padding:16px;background:linear-gradient(135deg,rgba(0,200,150,.15),rgba(0,255,157,.06));border-radius:14px;border:1px solid var(--green-dim);margin-bottom:4px}
+    .calorie-hero-val{font-size:32px;font-weight:900;color:var(--green)}
+    .calorie-hero-label{font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:.5px;text-transform:uppercase}
   </style>
 </head>
 <body>
@@ -89,6 +105,7 @@
     <button class="tab-btn" data-tab="exercise" onclick="switchTab('exercise')"><span class="tab-icon">💪</span><span class="tab-label">Exercise<br>Target</span></button>
     <button class="tab-btn" data-tab="disease" onclick="switchTab('disease')"><span class="tab-icon">🏥</span><span class="tab-label">Disease<br>Workout</span></button>
     <button class="tab-btn" data-tab="planner" onclick="switchTab('planner')"><span class="tab-icon">📋</span><span class="tab-label">Diet<br>Planner</span></button>
+    <button class="tab-btn" data-tab="calc" onclick="switchTab('calc')"><span class="tab-icon">🧮</span><span class="tab-label">Nutrition<br>Calculator</span></button>
   </div>
 
   <div class="feature-card">
@@ -156,31 +173,73 @@
       <button class="action-btn" id="planBtn" onclick="planGenerate()">⚡ 🥦 Mera Plan Banao</button>
       <div id="planResult"></div>
     </div>
+
+    <!-- PANEL 5: Nutrition Calculator -->
+    <div class="panel" id="panel-calc">
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>👤 Age (years)</label>
+          <input type="number" id="calcAge" placeholder="e.g. 25" />
+        </div>
+        <div class="calc-field">
+          <label>⚖️ Weight (kg)</label>
+          <input type="number" id="calcWeight" placeholder="e.g. 65" />
+        </div>
+        <div class="calc-field">
+          <label>📏 Height (cm)</label>
+          <input type="number" id="calcHeight" placeholder="e.g. 170" />
+        </div>
+        <div class="calc-field">
+          <label>🚻 Gender</label>
+          <select id="calcGender">
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+      </div>
+
+      <p class="diet-label">🏃 Activity Level Chunein</p>
+      <div class="activity-options">
+        <button class="activity-btn active" data-activity="1.2" onclick="selectActivity(this)">🛋️ Sedentary — Kam ya bilkul exercise nahi</button>
+        <button class="activity-btn" data-activity="1.375" onclick="selectActivity(this)">🚶 Light — Hafte mein 1-3 din exercise</button>
+        <button class="activity-btn" data-activity="1.55" onclick="selectActivity(this)">🏃 Moderate — Hafte mein 3-5 din exercise</button>
+        <button class="activity-btn" data-activity="1.725" onclick="selectActivity(this)">🏋️ Active — Hafte mein 6-7 din exercise</button>
+        <button class="activity-btn" data-activity="1.9" onclick="selectActivity(this)">🔥 Very Active — Hard exercise + physical job</button>
+      </div>
+
+      <button class="action-btn" id="calcBtn" onclick="calculateNutrition()">🧮 Calculate Karo</button>
+      <div id="calcResult"></div>
+      <p style="font-size:10.5px;color:var(--dark);text-align:center;margin-top:10px;line-height:1.6">
+        💡 Yeh Mifflin-St Jeor formula par based estimate hai (dietitians/doctors yahi use karte hain). Individual results vary kar sakte hain.
+      </p>
+    </div>
   </div>
 
   <div class="footer-strip">
-    <div class="footer-item"><div class="footer-val">4</div><div class="footer-lbl">Features</div></div>
+    <div class="footer-item"><div class="footer-val">5</div><div class="footer-lbl">Features</div></div>
     <div class="footer-item"><div class="footer-val">Groq AI</div><div class="footer-lbl">Powered by</div></div>
     <div class="footer-item"><div class="footer-val">🔒 Secure</div><div class="footer-lbl">Backend Safe</div></div>
-    <div class="footer-item"><div class="footer-val">📷 Vision</div><div class="footer-lbl">Photo Detect</div></div>
+    <div class="footer-item"><div class="footer-val">🧮 Calc</div><div class="footer-lbl">Calories</div></div>
   </div>
+  <p style="text-align:center;margin-top:14px"><a href="/privacy.html" style="color:var(--muted);font-size:11px;text-decoration:underline">Privacy Policy</a></p>
 </div></div>
 
 <script>
 const API_TEXT   = '/api/gemini';
 const API_VISION = '/api/gemini-vision';
 
-// Yeh function language detect karke instruction banata hai — actual input ke saath
-function langInstruction(inputText) {
-  return `Note: the input word/phrase is "${inputText}". If this looks like a Hindi or Hinglish word/phrase (Hindi words written in English letters, e.g. "seb", "kaise banayein", "chaval"), respond ENTIRELY in Hinglish (Hindi words written in Roman/English letters, mixed naturally with English technical terms, as commonly spoken in India). If it is a normal English word/phrase, respond ENTIRELY in clear English. Do not mention or explain this note — just give the direct answer in the chosen language.\n\n`;
-}
-
 const TAB_META = {
   calorie:  {icon:'🍔', title:'Calorie &amp; Junk Detector'},
   exercise: {icon:'💪', title:'Exercise → Body Part'},
   disease:  {icon:'🏥', title:'Disease-Specific Workout'},
   planner:  {icon:'📋', title:'AI Diet &amp; Exercise Planner'},
+  calc:     {icon:'🧮', title:'Nutrition Calculator'},
 };
+
+// Yeh function language detect karke instruction banata hai — actual input ke saath
+function langInstruction(inputText) {
+  return `Note: the input word/phrase is "${inputText}". If this looks like a Hindi or Hinglish word/phrase (Hindi words written in English letters, e.g. "seb", "kaise banayein", "chaval"), respond ENTIRELY in Hinglish (Hindi words written in Roman/English letters, mixed naturally with English technical terms, as commonly spoken in India). If it is a normal English word/phrase, respond ENTIRELY in clear English. Do not mention or explain this note — just give the direct answer in the chosen language.\n\n`;
+}
 
 let calMode='text', calImgB64=null, calImgMT=null, dietPref='veg';
 
@@ -355,6 +414,71 @@ Use Indian food names. Be specific and practical.`});
 document.getElementById('calFoodInput').addEventListener('keydown', e=>{if(e.key==='Enter')calAnalyse();});
 document.getElementById('exInput').addEventListener('keydown',      e=>{if(e.key==='Enter')exAnalyse();});
 document.getElementById('disInput').addEventListener('keydown',     e=>{if(e.key==='Enter')disAnalyse();});
+
+// ═══ NUTRITION CALCULATOR ═══
+let selectedActivity = 1.2;
+
+function selectActivity(btn) {
+  document.querySelectorAll('.activity-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedActivity = parseFloat(btn.dataset.activity);
+}
+
+function calculateNutrition() {
+  const age    = parseFloat(document.getElementById('calcAge').value);
+  const weight = parseFloat(document.getElementById('calcWeight').value);
+  const height = parseFloat(document.getElementById('calcHeight').value);
+  const gender = document.getElementById('calcGender').value;
+
+  if (!age || !weight || !height || age<=0 || weight<=0 || height<=0) {
+    alert('Age, Weight aur Height sahi se daalo!');
+    return;
+  }
+
+  // Mifflin-St Jeor BMR formula
+  let bmr;
+  if (gender === 'male') {
+    bmr = (10*weight) + (6.25*height) - (5*age) + 5;
+  } else {
+    bmr = (10*weight) + (6.25*height) - (5*age) - 161;
+  }
+
+  const tdee = bmr * selectedActivity;
+
+  // Macros
+  const proteinG = Math.round(weight * 1.6);
+  const proteinCal = proteinG * 4;
+  const fatCal = tdee * 0.25;
+  const fatG = Math.round(fatCal / 9);
+  const carbCal = tdee - proteinCal - fatCal;
+  const carbG = Math.round(carbCal / 4);
+
+  document.getElementById('calcResult').innerHTML = `
+    <div class="result-card">
+      <div class="calorie-hero">
+        <div class="calorie-hero-val">${Math.round(tdee)}</div>
+        <div class="calorie-hero-label">Daily Calories (kcal)</div>
+      </div>
+      <div class="macro-grid">
+        <div class="macro-box">
+          <div class="macro-val">${proteinG}g</div>
+          <div class="macro-label">💪 Protein</div>
+        </div>
+        <div class="macro-box">
+          <div class="macro-val">${carbG}g</div>
+          <div class="macro-label">🍞 Carbs</div>
+        </div>
+        <div class="macro-box">
+          <div class="macro-val">${fatG}g</div>
+          <div class="macro-label">🥑 Fats</div>
+        </div>
+      </div>
+      <p class="r-heading" style="margin-top:14px">📊 BMR (Resting)</p>
+      <p>${Math.round(bmr)} kcal/day — yeh aapka body bilkul rest mein bhi burn karta hai.</p>
+      <p class="r-heading">💡 Tip</p>
+      <p>Weight loss ke liye TDEE se 300-500 kcal kam khayein. Weight gain ke liye 300-500 kcal zyada khayein. Yeh numbers Diet Planner mein use kar sakte hain!</p>
+    </div>`;
+}
 </script>
 </body>
 </html>
